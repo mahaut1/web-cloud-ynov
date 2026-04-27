@@ -50,6 +50,10 @@ jobs:
         if: matrix.node-version == '20.x' && github.event_name == 'push'
         run: npx eas-cli build --platform android --non-interactive --no-wait
 
+      - name: Create update
+        if: matrix.node-version == '20.x' && github.event_name == 'push'
+        run: npx eas-cli update --auto --platform android --non-interactive
+
       - name: Upload artifact
         if: matrix.node-version == '20.x'
         uses: actions/upload-pages-artifact@v3
