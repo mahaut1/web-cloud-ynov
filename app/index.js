@@ -16,7 +16,6 @@ export default function Page() {
         <Link href="/register" style={styles.link}>
           Inscription
         </Link>
-        <Link href="/phone-login">Téléphone</Link>
       </View>
     </View>
   );

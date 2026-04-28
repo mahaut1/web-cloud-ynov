@@ -10,6 +10,8 @@ import {
     View,
 } from "react-native";
 import app from "../firebaseConfig";
+import { signinWithFacebook } from "../services/auth_facebook_signin_popup";
+import { signinWithGithub } from "../services/auth_github_signin_popup";
 
 export default function Page() {
   const [email, setEmail] = useState("");
@@ -43,6 +45,28 @@ export default function Page() {
     }
   };
 
+  const handleFacebookRegister = async () => {
+    try {
+      await signinWithFacebook();
+      Alert.alert("Succès", "Inscription avec Facebook réussie.");
+      router.replace("/profile");
+    } catch (error) {
+      Alert.alert("Erreur Facebook", error.message);
+      console.log(error);
+    }
+  };
+
+  const handleGithubRegister = async () => {
+    try {
+      await signinWithGithub();
+      Alert.alert("Succès", "Inscription avec GitHub réussie.");
+      router.replace("/profile");
+    } catch (error) {
+      Alert.alert("Erreur GitHub", error.message);
+      console.log(error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Inscription</Text>
@@ -66,6 +90,24 @@ export default function Page() {
 
       <Pressable style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>S'inscrire</Text>
+      </Pressable>
+
+      <Pressable style={styles.button} onPress={handleGithubRegister}>
+        <Text style={styles.buttonText}>S'inscrire avec GitHub</Text>
+      </Pressable>
+
+      <Pressable style={styles.button} onPress={handleFacebookRegister}>
+        <Text style={styles.buttonText}>S'inscrire avec Facebook</Text>
+      </Pressable>
+      <Pressable
+        style={styles.button}
+        onPress={() => router.push("/phone-register")}
+      >
+        <Text style={styles.buttonText}>S'inscrire avec téléphone</Text>
+      </Pressable>
+
+      <Pressable style={styles.button} onPress={handleAnonymousLogin}>
+        <Text style={styles.buttonText}>S'inscrire anonymement</Text>
       </Pressable>
     </View>
   );

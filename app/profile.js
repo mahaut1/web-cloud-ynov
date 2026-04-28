@@ -3,7 +3,7 @@ import { getAuth, signOut } from "firebase/auth";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import app from "../firebaseConfig";
 
-export default function Page() {
+export default function Profile() {
   const handleLogout = async () => {
     const auth = getAuth(app);
 

@@ -1,17 +1,17 @@
 import { router } from "expo-router";
 import {
-  getAuth,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
+    getAuth,
+    RecaptchaVerifier,
+    signInWithPhoneNumber,
 } from "firebase/auth";
 import { useState } from "react";
 import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Alert,
+    Pressable,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 import app from "../firebaseConfig";
 
@@ -22,14 +22,9 @@ export default function Page() {
 
   const auth = getAuth(app);
 
-  // Important pour les numéros de test Firebase
-  auth.settings.appVerificationDisabledForTesting = true;
-
   const sendCode = async () => {
     try {
-      const cleanPhone = phone.replace(/\s/g, "");
-
-      if (!cleanPhone.startsWith("+")) {
+      if (!phone.startsWith("+")) {
         Alert.alert(
           "Erreur",
           "Le numéro doit commencer par l’indicatif, ex: +33612345678",
@@ -37,24 +32,29 @@ export default function Page() {
         return;
       }
 
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        {
-          size: "invisible",
-        },
-      );
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(
+          auth,
+          "recaptcha-register-container",
+          {
+            size: "invisible",
+            callback: () => {
+              console.log("reCAPTCHA inscription validé");
+            },
+          },
+        );
+      }
 
       const result = await signInWithPhoneNumber(
         auth,
-        cleanPhone,
+        phone,
         window.recaptchaVerifier,
       );
 
       setConfirmationResult(result);
-      Alert.alert("Succès", "Code SMS prêt. Utilise le code test Firebase.");
+      Alert.alert("Succès", "Code SMS envoyé.");
     } catch (error) {
-      console.log("Erreur téléphone :", error);
+      console.log(error);
       Alert.alert("Erreur", error.message);
     }
   };
@@ -66,38 +66,34 @@ export default function Page() {
         return;
       }
 
-      const result = await confirmationResult.confirm(code);
+      await confirmationResult.confirm(code);
 
-      console.log("Connexion téléphone réussie :", result.user);
-
-      Alert.alert("Succès", "Connexion par téléphone réussie.");
+      Alert.alert("Succès", "Inscription par téléphone réussie.");
       router.replace("/profile");
     } catch (error) {
-      console.log("Erreur code :", error);
+      console.log(error);
       Alert.alert("Erreur", error.message);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Connexion par téléphone</Text>
+      <Text style={styles.title}>Inscription par téléphone</Text>
 
       <TextInput
-        placeholder="Numéro ex: +33612345678"
+        placeholder="Numéro de téléphone ex: +33612345678"
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
         style={styles.input}
       />
 
-      <div id="recaptcha-container"></div>
-
       <Pressable style={styles.button} onPress={sendCode}>
         <Text style={styles.buttonText}>Envoyer le code SMS</Text>
       </Pressable>
 
       <TextInput
-        placeholder="Code reçu"
+        placeholder="Code reçu par SMS"
         value={code}
         onChangeText={setCode}
         keyboardType="number-pad"
@@ -105,8 +101,10 @@ export default function Page() {
       />
 
       <Pressable style={styles.button} onPress={verifyCode}>
-        <Text style={styles.buttonText}>Valider le code</Text>
+        <Text style={styles.buttonText}>Créer le compte</Text>
       </Pressable>
+
+      <div id="recaptcha-register-container"></div>
     </View>
   );
 }
