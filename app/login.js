@@ -9,6 +9,7 @@ import {
     TextInput,
     View,
 } from "react-native";
+import { signinWithGithub } from "../auth_github_signin_popup";
 import app from "../firebaseConfig";
 
 export default function Page() {
@@ -75,6 +76,9 @@ export default function Page() {
         }
       >
         <Text style={styles.buttonText}>Se connecter avec téléphone</Text>
+      </Pressable>
+      <Pressable onPress={signinWithGithub} style={styles.button}>
+        <Text style={styles.buttonText}>Se connecter avec GitHub</Text>
       </Pressable>
     </View>
   );
