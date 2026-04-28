@@ -9,8 +9,8 @@ import {
     TextInput,
     View,
 } from "react-native";
-import { signinWithGithub } from "../auth_github_signin_popup";
 import app from "../firebaseConfig";
+import { signinWithGithub } from "./auth_github_signin_popup";
 
 export default function Page() {
   const [email, setEmail] = useState("");
@@ -71,9 +71,7 @@ export default function Page() {
 
       <Pressable
         style={styles.button}
-        onPress={() =>
-          Alert.alert("Téléphone", "Connexion par téléphone (à implémenter)")
-        }
+        onPress={() => router.push("/phone-login")}
       >
         <Text style={styles.buttonText}>Se connecter avec téléphone</Text>
       </Pressable>

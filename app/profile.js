@@ -1,12 +1,19 @@
 import { router } from "expo-router";
-import { signOut } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { auth } from "../firebaseConfig";
+import app from "../firebaseConfig";
 
 export default function Page() {
   const handleLogout = async () => {
-    await signOut(auth);
-    router.replace("/login");
+    const auth = getAuth(app);
+
+    try {
+      await signOut(auth);
+      router.replace("/login");
+    } catch (error) {
+      alert(error.message);
+      console.log(error);
+    }
   };
 
   return (
