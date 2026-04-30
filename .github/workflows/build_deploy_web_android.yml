@@ -36,32 +36,32 @@ jobs:
         run: npm run predeploy
 
       - name: Check dist content
-        if: matrix.node-version == '20.x'
+        if: matrix.node-version == '23.x'
         run: ls -la dist
 
       - name: Setup GitHub Pages
-        if: matrix.node-version == '20.x'
+        if: matrix.node-version == '23.x'
         uses: actions/configure-pages@v3
 
       - name: Upload artifact
-        if: matrix.node-version == '20.x'
+        if: matrix.node-version == '23.x'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
       - name: Setup EAS
-        if: matrix.node-version == '20.x' && github.event_name == 'push'
+        if: matrix.node-version == '23.x' && github.event_name == 'push'
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build Android app
-        if: matrix.node-version == '20.x' && github.event_name == 'push'
+        if: matrix.node-version == '23.x' && github.event_name == 'push'
         run: npx eas-cli build --platform android --non-interactive --no-wait
 
       - name: Create update
-        if: matrix.node-version == '20.x' && github.event_name == 'push'
+        if: matrix.node-version == '23.x' && github.event_name == 'push'
         run: npx eas-cli update --auto --platform android --non-interactive
 
   deploy:
