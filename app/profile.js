@@ -1,9 +1,23 @@
 import { router } from "expo-router";
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { useEffect } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import app from "../firebaseConfig";
 
 export default function Profile() {
+  useEffect(() => {
+    const auth = getAuth(app);
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        // ❌ pas connecté → redirection
+        router.replace("/login");
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
   const handleLogout = async () => {
     const auth = getAuth(app);
 
@@ -12,14 +26,13 @@ export default function Profile() {
       router.replace("/login");
     } catch (error) {
       alert(error.message);
-      console.log(error);
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Page profil</Text>
-      <Text>Bienvenue, votre compte a bien été créé.</Text>
+      <Text>Ici s'affichera prochainement votre profil.</Text>
 
       <Pressable style={styles.button} onPress={handleLogout}>
         <Text style={styles.buttonText}>Se déconnecter</Text>

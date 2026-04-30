@@ -16,6 +16,9 @@ export default function Page() {
         <Link href="/register" style={styles.link}>
           Inscription
         </Link>
+        <Link href="/profile" style={styles.link}>
+          Profil
+        </Link>
       </View>
     </View>
   );

@@ -2,14 +2,16 @@ import { router } from "expo-router";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { useState } from "react";
 import {
-    Alert,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
+import Navbar from "../components/Navbar";
 import app from "../firebaseConfig";
+import { signinAnonymously } from "../services/auth_anonymous_signin";
 import { signinWithFacebook } from "../services/auth_facebook_signin_popup";
 import { signinWithGithub } from "../services/auth_github_signin_popup";
 
@@ -66,9 +68,20 @@ export default function Page() {
       console.log(error);
     }
   };
+  const handleAnonymousLogin = async () => {
+    try {
+      await signinAnonymously();
+      Alert.alert("Succès", "Inscription anonyme réussie.");
+      router.replace("/profile");
+    } catch (error) {
+      Alert.alert("Erreur", error.message);
+      console.log(error);
+    }
+  };
 
   return (
     <View style={styles.container}>
+      <Navbar />
       <Text style={styles.title}>Inscription</Text>
 
       <TextInput

@@ -1,50 +1,100 @@
-# Welcome to your Expo app 👋
+# Web Cloud Ynov - Projet individuel
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Application React Native développée avec Expo et Expo Router dans le cadre du TP **Livrable 1 : Socle Technique & Déploiement Continu**.
 
-## Get started
+## Lien de l'application déployée
 
-1. Install dependencies
+Application web déployée sur GitHub Pages :  
+https://mahaut1.github.io/web-cloud-ynov
 
-   ```bash
-   npm install
-   ```
+## Objectif du projet
 
-2. Start the app
+L'objectif est de créer une application Expo avec :
 
-   ```bash
-   npx expo start
-   ```
+- une navigation entre les pages principales ;
+- une authentification Firebase multi-méthodes ;
+- une page profil protégée ;
+- un pipeline CI/CD avec GitHub Actions ;
+- un déploiement web sur GitHub Pages ;
+- un build mobile via EAS.
 
-In the output, you'll find options to open the app in a
+## Technologies utilisées
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- React Native
+- Expo
+- Expo Router
+- Firebase Authentication
+- GitHub Actions
+- GitHub Pages
+- EAS Build
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Fonctionnalités réalisées
 
-## Get a fresh project
+### Navigation
 
-When you're ready, run:
+L'application contient les pages suivantes :
+
+- Accueil
+- Connexion
+- Inscription
+- Profil
+
+Une navigation permet d'accéder aux différentes pages de l'application.
+
+### Authentification Firebase
+
+Les méthodes de connexion suivantes sont implémentées :
+
+- Email / mot de passe
+- Téléphone avec OTP
+- GitHub
+- Facebook
+- Connexion anonyme
+
+Après une connexion ou une inscription réussie, l'utilisateur est automatiquement redirigé vers la page Profil.
+
+Après une déconnexion, l'utilisateur est redirigé vers la page Connexion.
+
+### Page Profil
+
+La page Profil affiche le texte demandé :
+
+> Ici s'affichera prochainement votre profil
+
+Elle contient également un bouton de déconnexion.
+
+### CI/CD et déploiement
+
+Un workflow GitHub Actions est configuré pour :
+
+- installer les dépendances ;
+- builder l'application web ;
+- déployer l'application sur GitHub Pages ;
+- lancer un build Android avec EAS.
+
+## Installation du projet
 
 ```bash
-npm run reset-project
+npm install
+
+## Lancer le projet en local
+npx expo start
+
+##Lancer la version web
+npx expo start --web
+
+##Build web
+npm run predeploy
+
+##Déploiement
+Le déploiement est automatisé avec GitHub Actions à chaque push sur la branche master.
+
+##Preuve EAS
+![Build EAS réussi](./assets/eas-success.png)
+
+## Repository GitHub
+https://github.com/mahaut1/web-cloud-ynov
+
+
+
 ```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

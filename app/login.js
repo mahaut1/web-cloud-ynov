@@ -1,18 +1,19 @@
 import { router } from "expo-router";
 import {
-    getAuth,
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
 import { useEffect, useState } from "react";
 import {
-    Alert,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
+import Navbar from "../components/Navbar";
 import app from "../firebaseConfig";
 import { signinAnonymously } from "../services/auth_anonymous_signin";
 import { signinWithFacebook } from "../services/auth_facebook_signin_popup";
@@ -77,6 +78,7 @@ export default function Page() {
 
   return (
     <View style={styles.container}>
+      <Navbar />
       <Text style={styles.title}>Connexion</Text>
 
       <TextInput
