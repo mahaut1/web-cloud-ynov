@@ -1,14 +1,13 @@
 import { router } from "expo-router";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
-import { useState } from "react";
 import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+  createUserWithEmailAndPassword,
+  getAuth,
+  updateProfile,
+} from "firebase/auth";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { toast } from "react-toastify";
+
 import Navbar from "../components/Navbar";
 import app from "../firebaseConfig";
 import { signinAnonymously } from "../services/auth_anonymous_signin";
@@ -18,71 +17,125 @@ import { signinWithGithub } from "../services/auth_github_signin_popup";
 export default function Page() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [prenom, setPrenom] = useState("");
+  const [nom, setNom] = useState("");
 
   const isValidEmail = (value) => /\S+@\S+\.\S+/.test(value);
 
   const handleRegister = async () => {
     const auth = getAuth(app);
 
+    if (!prenom || !nom) {
+      toast.error("Veuillez renseigner votre prénom et votre nom.");
+      return;
+    }
+
     if (!isValidEmail(email)) {
-      Alert.alert("Erreur", "Veuillez entrer une adresse email valide.");
+      toast.error("Veuillez entrer une adresse email valide.");
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert(
-        "Erreur",
-        "Le mot de passe doit contenir au moins 6 caractères.",
-      );
+      toast.error("Le mot de passe doit contenir au moins 6 caractères.");
       return;
     }
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      Alert.alert("Succès", "Compte créé avec succès.");
-      router.replace("/profile");
-    } catch (error) {
-      Alert.alert("Erreur", error.message);
-      console.log(error);
-    }
-  };
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
 
-  const handleFacebookRegister = async () => {
-    try {
-      await signinWithFacebook();
-      Alert.alert("Succès", "Inscription avec Facebook réussie.");
+      await updateProfile(userCredential.user, {
+        displayName: `${prenom} ${nom}`,
+      });
+
+      toast.success("Compte créé avec succès !");
       router.replace("/profile");
     } catch (error) {
-      Alert.alert("Erreur Facebook", error.message);
-      console.log(error);
+      if (error.code === "auth/email-already-in-use") {
+        toast.error("Un compte existe déjà avec cette adresse email.");
+        return;
+      }
+
+      toast.error(error.message);
     }
   };
 
   const handleGithubRegister = async () => {
     try {
       await signinWithGithub();
-      Alert.alert("Succès", "Inscription avec GitHub réussie.");
+      toast.success("Inscription avec GitHub réussie !");
       router.replace("/profile");
     } catch (error) {
-      Alert.alert("Erreur GitHub", error.message);
-      console.log(error);
+      if (error.code === "auth/account-exists-with-different-credential") {
+        toast.error(
+          "Un compte existe déjà avec cet email. Utilisez la bonne méthode de connexion.",
+        );
+        return;
+      }
+
+      if (error.code === "auth/popup-closed-by-user") {
+        toast.info("Inscription GitHub annulée.");
+        return;
+      }
+
+      toast.error(error.message);
     }
   };
+
+  const handleFacebookRegister = async () => {
+    try {
+      await signinWithFacebook();
+      toast.success("Inscription avec Facebook réussie !");
+      router.replace("/profile");
+    } catch (error) {
+      if (error.code === "auth/account-exists-with-different-credential") {
+        toast.error(
+          "Un compte existe déjà avec cet email. Utilisez la bonne méthode de connexion.",
+        );
+        return;
+      }
+
+      if (error.code === "auth/popup-closed-by-user") {
+        toast.info("Inscription Facebook annulée.");
+        return;
+      }
+
+      toast.error(error.message);
+    }
+  };
+
   const handleAnonymousLogin = async () => {
     try {
       await signinAnonymously();
-      Alert.alert("Succès", "Inscription anonyme réussie.");
+      toast.success("Inscription anonyme réussie !");
       router.replace("/profile");
     } catch (error) {
-      Alert.alert("Erreur", error.message);
-      console.log(error);
+      toast.error(error.message);
     }
   };
 
   return (
     <View style={styles.container}>
       <Navbar />
+
       <Text style={styles.title}>Inscription</Text>
+
+      <TextInput
+        placeholder="Prénom"
+        value={prenom}
+        onChangeText={setPrenom}
+        style={styles.input}
+      />
+
+      <TextInput
+        placeholder="Nom"
+        value={nom}
+        onChangeText={setNom}
+        style={styles.input}
+      />
 
       <TextInput
         placeholder="Email"
@@ -112,6 +165,7 @@ export default function Page() {
       <Pressable style={styles.button} onPress={handleFacebookRegister}>
         <Text style={styles.buttonText}>S'inscrire avec Facebook</Text>
       </Pressable>
+
       <Pressable
         style={styles.button}
         onPress={() => router.push("/phone-register")}

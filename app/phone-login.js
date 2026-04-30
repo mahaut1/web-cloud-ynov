@@ -5,14 +5,10 @@ import {
   signInWithPhoneNumber,
 } from "firebase/auth";
 import { useState } from "react";
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { toast } from "react-toastify";
+
+import Navbar from "../components/Navbar";
 import app from "../firebaseConfig";
 
 export default function Page() {
@@ -22,64 +18,69 @@ export default function Page() {
 
   const auth = getAuth(app);
 
-  // Important pour les numéros de test Firebase
-  auth.settings.appVerificationDisabledForTesting = true;
+  // ✅ regex international (Firebase compatible)
+  const isValidPhone = (value) => /^\+[1-9]\d{9,14}$/.test(value);
 
   const sendCode = async () => {
     try {
-      const cleanPhone = phone.replace(/\s/g, "");
-
-      if (!cleanPhone.startsWith("+")) {
-        Alert.alert(
-          "Erreur",
-          "Le numéro doit commencer par l’indicatif, ex: +33612345678",
-        );
+      if (!isValidPhone(phone)) {
+        toast.error("Numéro invalide. Format : +33612345678");
         return;
       }
 
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        {
-          size: "invisible",
-        },
-      );
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(
+          auth,
+          "recaptcha-login-container",
+          {
+            size: "invisible",
+            callback: () => {
+              console.log("reCAPTCHA validé");
+            },
+          },
+        );
+      }
 
       const result = await signInWithPhoneNumber(
         auth,
-        cleanPhone,
+        phone,
         window.recaptchaVerifier,
       );
 
       setConfirmationResult(result);
-      Alert.alert("Succès", "Code SMS prêt. Utilise le code test Firebase.");
+      toast.success("Code SMS envoyé !");
     } catch (error) {
-      console.log("Erreur téléphone :", error);
-      Alert.alert("Erreur", error.message);
+      toast.error(error.message);
+      console.log(error);
     }
   };
 
   const verifyCode = async () => {
     try {
       if (!confirmationResult) {
-        Alert.alert("Erreur", "Veuillez d’abord envoyer un code.");
+        toast.error("Veuillez d'abord envoyer un code.");
         return;
       }
 
-      const result = await confirmationResult.confirm(code);
+      if (!code || code.length < 6) {
+        toast.error("Code invalide.");
+        return;
+      }
 
-      console.log("Connexion téléphone réussie :", result.user);
+      await confirmationResult.confirm(code);
 
-      Alert.alert("Succès", "Connexion par téléphone réussie.");
+      toast.success("Connexion réussie !");
       router.replace("/profile");
     } catch (error) {
-      console.log("Erreur code :", error);
-      Alert.alert("Erreur", error.message);
+      toast.error("Code incorrect.");
+      console.log(error);
     }
   };
 
   return (
     <View style={styles.container}>
+      <Navbar />
+
       <Text style={styles.title}>Connexion par téléphone</Text>
 
       <TextInput
@@ -89,8 +90,6 @@ export default function Page() {
         keyboardType="phone-pad"
         style={styles.input}
       />
-
-      <div id="recaptcha-container"></div>
 
       <Pressable style={styles.button} onPress={sendCode}>
         <Text style={styles.buttonText}>Envoyer le code SMS</Text>
@@ -105,8 +104,10 @@ export default function Page() {
       />
 
       <Pressable style={styles.button} onPress={verifyCode}>
-        <Text style={styles.buttonText}>Valider le code</Text>
+        <Text style={styles.buttonText}>Se connecter</Text>
       </Pressable>
+
+      <div id="recaptcha-login-container"></div>
     </View>
   );
 }

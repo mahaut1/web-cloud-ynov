@@ -5,14 +5,9 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { useEffect, useState } from "react";
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { toast } from "react-toastify";
+
 import Navbar from "../components/Navbar";
 import app from "../firebaseConfig";
 import { signinAnonymously } from "../services/auth_anonymous_signin";
@@ -29,46 +24,83 @@ export default function Page() {
     const auth = getAuth(app);
 
     if (!isValidEmail(email)) {
-      Alert.alert("Erreur", "Veuillez entrer une adresse email valide.");
+      toast.error("Email invalide");
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert(
-        "Erreur",
-        "Le mot de passe doit contenir au moins 6 caractères.",
-      );
+      toast.error("Mot de passe trop court");
       return;
     }
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      Alert.alert("Succès", "Connexion réussie.");
+      toast.success("Connexion réussie !");
       router.replace("/profile");
     } catch (error) {
-      Alert.alert("Erreur", error.message);
-      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
+  const handleGithubLogin = async () => {
+    try {
+      await signinWithGithub();
+      toast.success("Connexion GitHub réussie !");
+      router.replace("/profile");
+    } catch (error) {
+      if (error.code === "auth/account-exists-with-different-credential") {
+        toast.error(
+          "Un compte existe déjà avec cet email. Utilisez la bonne méthode de connexion.",
+        );
+        return;
+      }
+
+      if (error.code === "auth/popup-closed-by-user") {
+        toast.info("Connexion annulée");
+        return;
+      }
+
+      toast.error(error.message);
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    try {
+      await signinWithFacebook();
+      toast.success("Connexion Facebook réussie !");
+      router.replace("/profile");
+    } catch (error) {
+      if (error.code === "auth/account-exists-with-different-credential") {
+        toast.error(
+          "Un compte existe déjà avec cet email. Utilisez la bonne méthode de connexion.",
+        );
+        return;
+      }
+
+      if (error.code === "auth/popup-closed-by-user") {
+        toast.info("Connexion annulée");
+        return;
+      }
+
+      toast.error(error.message);
     }
   };
 
   const handleAnonymousLogin = async () => {
     try {
-      const user = await signinAnonymously();
-
-      console.log("User anonyme :", user);
-
-      Alert.alert("Succès", "Connexion anonyme réussie.");
+      await signinAnonymously();
+      toast.success("Connexion anonyme réussie !");
+      router.replace("/profile");
     } catch (error) {
-      console.log(error);
-      Alert.alert("Erreur", error.message);
+      toast.error(error.message);
     }
   };
+
   useEffect(() => {
     const auth = getAuth(app);
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log("login success", user);
         router.replace("/profile");
       }
     });
@@ -79,14 +111,13 @@ export default function Page() {
   return (
     <View style={styles.container}>
       <Navbar />
+
       <Text style={styles.title}>Connexion</Text>
 
       <TextInput
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
         style={styles.input}
       />
 
@@ -108,20 +139,21 @@ export default function Page() {
       >
         <Text style={styles.buttonText}>Se connecter avec téléphone</Text>
       </Pressable>
-      <Pressable onPress={signinWithGithub} style={styles.button}>
+
+      <Pressable style={styles.button} onPress={handleGithubLogin}>
         <Text style={styles.buttonText}>Se connecter avec GitHub</Text>
       </Pressable>
 
-      <Pressable style={styles.button} onPress={signinWithFacebook}>
+      <Pressable style={styles.button} onPress={handleFacebookLogin}>
         <Text style={styles.buttonText}>Se connecter avec Facebook</Text>
       </Pressable>
+
       <Pressable style={styles.button} onPress={handleAnonymousLogin}>
         <Text style={styles.buttonText}>Continuer anonymement</Text>
       </Pressable>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     padding: 24,

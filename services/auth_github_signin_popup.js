@@ -1,24 +1,12 @@
-import { router } from "expo-router";
-import { GithubAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
+import { getAuth, signInWithPopup } from "firebase/auth";
 import app from "../firebaseConfig";
-import { provider } from "./auth_github_provider_create";
+import { githubProvider } from "./auth_github_provider_create";
 
-export const signinWithGithub = () => {
+export const signinWithGithub = async () => {
   const auth = getAuth(app);
 
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      const credential = GithubAuthProvider.credentialFromResult(result);
-      const token = credential.accessToken;
-      const user = result.user;
+  const result = await signInWithPopup(auth, githubProvider);
+  console.log("signin success with github", result.user);
 
-      console.log("signin success with github");
-      console.log(user);
-      console.log(token);
-      router.replace("/profile");
-    })
-    .catch((error) => {
-      console.log(error);
-      alert(error.message);
-    });
+  return result.user;
 };

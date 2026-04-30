@@ -1,18 +1,14 @@
 import { router } from "expo-router";
 import {
-    getAuth,
-    RecaptchaVerifier,
-    signInWithPhoneNumber,
+  getAuth,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
 } from "firebase/auth";
 import { useState } from "react";
-import {
-    Alert,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { toast } from "react-toastify";
+
+import Navbar from "../components/Navbar";
 import app from "../firebaseConfig";
 
 export default function Page() {
@@ -22,13 +18,12 @@ export default function Page() {
 
   const auth = getAuth(app);
 
+  const isValidPhone = (value) => /^\+[1-9]\d{9,14}$/.test(value);
+
   const sendCode = async () => {
     try {
-      if (!phone.startsWith("+")) {
-        Alert.alert(
-          "Erreur",
-          "Le numéro doit commencer par l’indicatif, ex: +33612345678",
-        );
+      if (!isValidPhone(phone)) {
+        toast.error("Numéro invalide (ex: +33612345678)");
         return;
       }
 
@@ -39,7 +34,7 @@ export default function Page() {
           {
             size: "invisible",
             callback: () => {
-              console.log("reCAPTCHA inscription validé");
+              console.log("reCAPTCHA validé");
             },
           },
         );
@@ -52,36 +47,43 @@ export default function Page() {
       );
 
       setConfirmationResult(result);
-      Alert.alert("Succès", "Code SMS envoyé.");
+      toast.success("Code SMS envoyé !");
     } catch (error) {
       console.log(error);
-      Alert.alert("Erreur", error.message);
+      toast.error("Erreur lors de l'envoi du SMS");
     }
   };
 
   const verifyCode = async () => {
     try {
       if (!confirmationResult) {
-        Alert.alert("Erreur", "Veuillez d’abord envoyer un code.");
+        toast.error("Veuillez d'abord envoyer un code.");
+        return;
+      }
+
+      if (!code || code.length < 6) {
+        toast.error("Code invalide.");
         return;
       }
 
       await confirmationResult.confirm(code);
 
-      Alert.alert("Succès", "Inscription par téléphone réussie.");
+      toast.success("Inscription réussie !");
       router.replace("/profile");
     } catch (error) {
       console.log(error);
-      Alert.alert("Erreur", error.message);
+      toast.error("Code incorrect.");
     }
   };
 
   return (
     <View style={styles.container}>
+      <Navbar />
+
       <Text style={styles.title}>Inscription par téléphone</Text>
 
       <TextInput
-        placeholder="Numéro de téléphone ex: +33612345678"
+        placeholder="Numéro ex: +33612345678"
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
