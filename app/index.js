@@ -1,44 +1,94 @@
 import { Link } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-export default function Page() {
+import { getPostData } from "../firebase/get_post_data";
+
+export default function Home() {
+  const [posts, setPosts] = useState([]);
+
+  const fetchData = async () => {
+    const data = await getPostData();
+    setPosts(data);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Bienvenue sur Web Cloud Ynov</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Bienvenue</Text>
 
-      <View style={styles.navbar}>
-        <Link href="/" style={styles.link}>
-          Accueil
-        </Link>
-        <Link href="/login" style={styles.link}>
-          Connexion
-        </Link>
-        <Link href="/register" style={styles.link}>
-          Inscription
-        </Link>
-        <Link href="/profile" style={styles.link}>
-          Profil
-        </Link>
-      </View>
-    </View>
+      <Link href="/newpost" asChild>
+        <Pressable style={styles.button}>
+          <Text style={styles.buttonText}>Créer un nouveau post</Text>
+        </Pressable>
+      </Link>
+
+      <Pressable style={styles.refreshButton} onPress={fetchData}>
+        <Text style={styles.buttonText}>Rafraîchir</Text>
+      </Pressable>
+
+      {posts.length === 0 ? (
+        <Text>Aucun post pour le moment.</Text>
+      ) : (
+        posts.map((p) => (
+          <View key={p.id} style={styles.item}>
+            <Text style={styles.itemTitle}>{p.title}</Text>
+            <Text>{p.text}</Text>
+            <Text>Auteur : {p.createdBy}</Text>
+
+            <Link href={`/post/${p.id}`} asChild>
+              <Pressable style={styles.detailButton}>
+                <Text style={styles.buttonText}>Voir le post</Text>
+              </Pressable>
+            </Link>
+          </View>
+        ))
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     padding: 24,
-    gap: 24,
+    gap: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
   },
-  navbar: {
-    flexDirection: "row",
-    gap: 20,
+  button: {
+    backgroundColor: "#2563eb",
+    padding: 12,
+    borderRadius: 8,
   },
-  link: {
-    color: "#2563eb",
-    fontSize: 16,
+  refreshButton: {
+    backgroundColor: "#16a34a",
+    padding: 12,
+    borderRadius: 8,
+  },
+  detailButton: {
+    backgroundColor: "#7c3aed",
+    padding: 12,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: "white",
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  item: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 12,
+    borderRadius: 8,
+    gap: 8,
+  },
+  itemTitle: {
+    fontWeight: "bold",
+    fontSize: 18,
   },
 });
