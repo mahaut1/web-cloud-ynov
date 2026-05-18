@@ -1,3 +1,4 @@
+import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import {
   getAuth,
@@ -6,13 +7,24 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+
 import app from "../firebaseConfig";
+import { updateUserPhotoUrl } from "../utils/auth_update_photo_url";
+import { uploadToFirebase } from "../utils/storage_upload_file";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [displayName, setDisplayName] = useState("");
   const [photoURL, setPhotoURL] = useState("");
+  const [image, setImage] = useState(null);
 
   useEffect(() => {
     const auth = getAuth(app);
@@ -42,10 +54,53 @@ export default function Profile() {
         photoURL,
       });
 
-      setUser({ ...auth.currentUser });
+      setUser({
+        ...auth.currentUser,
+        displayName,
+        photoURL,
+      });
+
       alert("Profil mis à jour !");
     } catch (error) {
       alert(error.message);
+    }
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+
+      setImage(uri);
+
+      const fileName = uri.split("/").pop();
+
+      try {
+        const downloadURL = await uploadToFirebase(uri, fileName);
+
+        const res = await updateUserPhotoUrl(downloadURL);
+
+        if (res) {
+          setPhotoURL(downloadURL);
+
+          setUser({
+            ...user,
+            photoURL: downloadURL,
+          });
+
+          alert("Photo mise à jour !");
+        } else {
+          alert("Erreur lors de la mise à jour de la photo.");
+        }
+      } catch (error) {
+        alert(error.message);
+      }
     }
   };
 
@@ -72,11 +127,19 @@ export default function Profile() {
     <View style={styles.container}>
       <Text style={styles.title}>Mon profil</Text>
 
+      {photoURL ? (
+        <Image source={{ uri: photoURL }} style={styles.image} />
+      ) : null}
+
+      <Pressable style={styles.imageButton} onPress={pickImage}>
+        <Text style={styles.buttonText}>Choisir une image</Text>
+      </Pressable>
+
+      {image && <Image source={{ uri: image }} style={styles.image} />}
+
       <Text>Email : {user.email || "Non renseigné"}</Text>
       <Text>UID : {user.uid}</Text>
       <Text>Email vérifié : {user.emailVerified ? "Oui" : "Non"}</Text>
-      <Text>Nom actuel : {user.displayName || "Non renseigné"}</Text>
-      <Text>Photo URL : {user.photoURL || "Non renseignée"}</Text>
 
       <TextInput
         style={styles.input}
@@ -87,7 +150,7 @@ export default function Profile() {
 
       <TextInput
         style={styles.input}
-        placeholder="URL de la photo"
+        placeholder="URL photo"
         value={photoURL}
         onChangeText={setPhotoURL}
       />
@@ -112,9 +175,20 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
+  image: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    alignSelf: "center",
+  },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
+    padding: 12,
+    borderRadius: 8,
+  },
+  imageButton: {
+    backgroundColor: "#16a34a",
     padding: 12,
     borderRadius: 8,
   },
