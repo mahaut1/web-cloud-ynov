@@ -1,12 +1,20 @@
 import app from "../firebaseConfig";
 
-import { collection, getDocs, getFirestore } from "firebase/firestore";
+import {
+    collection,
+    getDocs,
+    getFirestore,
+    orderBy,
+    query,
+} from "firebase/firestore";
 
 const db = getFirestore(app, "web-cloud");
 
 export const getPostData = async () => {
   try {
-    const querySnapshot = await getDocs(collection(db, "posts"));
+    const q = query(collection(db, "posts"), orderBy("date", "desc"));
+
+    const querySnapshot = await getDocs(q);
 
     const posts = querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -17,8 +25,7 @@ export const getPostData = async () => {
 
     return posts;
   } catch (e) {
-    console.error("Erreur récupération :", e);
-
+    console.error("Erreur récupération posts :", e);
     return [];
   }
 };

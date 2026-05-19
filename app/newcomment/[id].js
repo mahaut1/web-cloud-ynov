@@ -31,27 +31,32 @@ export default function NewComment() {
 
   const handleCreateComment = async () => {
     if (!user) {
-      setMessage("Vous devez être connecté pour commenter.");
+      setMessage("Tu dois être connecté pour commenter.");
       return;
     }
 
     if (!text.trim()) {
-      setMessage("Veuillez écrire un commentaire.");
+      setMessage("Écris un commentaire.");
       return;
     }
 
     setLoading(true);
     setMessage("Publication du commentaire...");
 
-    const author = user.displayName || user.email || "Utilisateur inconnu";
+    const authorName = user.displayName || user.email || "Utilisateur inconnu";
 
-    const res = await createComment(id, text.trim(), author);
+    const res = await createComment(
+      id,
+      text.trim(),
+      user.email,
+      authorName,
+      user.uid,
+    );
 
     setLoading(false);
 
     if (res) {
       setMessage("Commentaire ajouté !");
-
       setText("");
 
       setTimeout(() => {

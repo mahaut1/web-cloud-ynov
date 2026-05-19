@@ -3,12 +3,20 @@ import app from "../firebaseConfig";
 
 const db = getFirestore(app, "web-cloud");
 
-export const createComment = async (postId, text, createdBy) => {
+export const createComment = async (
+  postId,
+  text,
+  createdBy,
+  createdByName,
+  createdByUid,
+) => {
   try {
     const docRef = await addDoc(collection(db, "comments"), {
       postId,
       text,
       createdBy,
+      createdByName,
+      createdByUid,
       date: new Date(),
     });
 

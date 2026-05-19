@@ -7,8 +7,8 @@ import { createPost } from "../firebase/add_post_data";
 import app from "../firebaseConfig";
 
 export default function NewPost() {
-  const [title, setTitle] = useState("");
   const [text, setText] = useState("");
+  const [imageURL, setImageURL] = useState("");
   const [user, setUser] = useState(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,34 +30,40 @@ export default function NewPost() {
 
   const handleCreatePost = async () => {
     if (!user) {
-      setMessage("Vous devez être connecté pour publier.");
-      router.replace("/login");
+      setMessage("Tu dois être connecté pour publier.");
       return;
     }
 
-    if (!title.trim() || !text.trim()) {
-      setMessage("Veuillez remplir le titre et le contenu.");
+    if (!text.trim()) {
+      setMessage("Écris quelque chose avant de publier.");
       return;
     }
 
     setLoading(true);
     setMessage("Publication en cours...");
 
-    const res = await createPost(title.trim(), text.trim(), user.email);
+    const authorName = user.displayName || user.email || "Utilisateur inconnu";
+
+    const res = await createPost(
+      text.trim(),
+      imageURL.trim(),
+      user.email,
+      authorName,
+      user.uid,
+    );
 
     setLoading(false);
 
     if (res) {
-      setMessage("Post créé avec succès !");
-
-      setTitle("");
+      setMessage("Post publié !");
       setText("");
+      setImageURL("");
 
       setTimeout(() => {
         router.replace("/");
-      }, 1000);
+      }, 800);
     } else {
-      setMessage("Erreur lors de la création du post.");
+      setMessage("Erreur lors de la publication.");
     }
   };
 
@@ -68,18 +74,18 @@ export default function NewPost() {
       {message ? <Text style={styles.message}>{message}</Text> : null}
 
       <TextInput
-        style={styles.input}
-        placeholder="Titre"
-        value={title}
-        onChangeText={setTitle}
-      />
-
-      <TextInput
         style={[styles.input, styles.textarea]}
-        placeholder="Contenu"
+        placeholder="Quoi de neuf ?"
         value={text}
         onChangeText={setText}
         multiline
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="URL d'image optionnelle"
+        value={imageURL}
+        onChangeText={setImageURL}
       />
 
       <Pressable
@@ -105,8 +111,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   message: {
-    fontWeight: "bold",
     color: "#2563eb",
+    fontWeight: "bold",
   },
   input: {
     borderWidth: 1,
@@ -115,7 +121,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   textarea: {
-    height: 120,
+    height: 140,
     textAlignVertical: "top",
   },
   button: {
